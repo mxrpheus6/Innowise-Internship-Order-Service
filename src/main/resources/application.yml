@@ -1,0 +1,17 @@
+server:
+  port: 4002
+
+spring:
+  application:
+    name: order-service
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5435/orders_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
+
+  liquibase:
+    change-log: classpath:db/changelog/app-changelog.xml
