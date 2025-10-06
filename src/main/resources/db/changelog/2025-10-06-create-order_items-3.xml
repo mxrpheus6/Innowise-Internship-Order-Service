@@ -5,7 +5,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-  <changeSet id="2025-10-06-create-order_items-uuid" author="Pavel Kazachenko">
+  <changeSet id="2025-10-06-create-order_items-3" author="Pavel Kazachenko">
     <createTable tableName="order_items">
       <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
         <constraints primaryKey="true" nullable="false"/>
