@@ -5,10 +5,8 @@ services:
   user-service:
     build: .
     container_name: order_service
-    environment:
-      DB_URL: jdbc:postgresql://orders-db:5432/orders_db
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
+    env_file:
+      - .env
     ports:
       - "4002:4002"
     depends_on:
