@@ -21,7 +21,7 @@ public interface OrderItemDao {
     List<OrderItem> findByItemId(UUID itemId);
     Optional<OrderItem> findByOrderAndItem(UUID orderId, UUID itemId);
     OrderItem create(OrderItem orderItem);
-    OrderItem updateById(OrderItem orderItem);
+    OrderItem updateById(UUID id, OrderItem orderItem);
     void deleteById(UUID id);
     void deleteByOrderId(UUID orderId);
     void deleteByItemId(UUID itemId);

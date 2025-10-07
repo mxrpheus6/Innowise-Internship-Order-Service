@@ -87,17 +87,17 @@ public class OrderItemDaoImpl implements OrderItemDao {
     }
 
     @Override
-    public OrderItem updateById(OrderItem orderItem) {
+    public OrderItem updateById(UUID id, OrderItem orderItem) {
         int updatedRows = jdbcTemplate.update(
                 SQL.UPDATE_BY_ID,
                 orderItem.getOrderId(),
                 orderItem.getItemId(),
                 orderItem.getQuantity(),
-                orderItem.getId()
+                id
         );
 
         if (updatedRows == 0) {
-            throw new EmptyResultDataAccessException("Order-Item with id " + orderItem.getId() + " not found for update", 1);
+            throw new EmptyResultDataAccessException("Order-Item with id " + id + " not found for update", 1);
         }
 
         return orderItem;

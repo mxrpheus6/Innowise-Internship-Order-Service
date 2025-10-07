@@ -22,6 +22,6 @@ public interface OrderDao {
     List<Order> findByStatus(Status status);
     List<Order> findByIds(Set<UUID> ids);
     Order create(Order order);
-    Order updateById(Order order);
+    Order updateById(UUID id, Order order);
     void deleteById(UUID id);
 }

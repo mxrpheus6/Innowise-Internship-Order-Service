@@ -18,6 +18,6 @@ public interface ItemDao {
     Optional<Item> findById(UUID id);
     List<Item> findByIds(Set<UUID> ids);
     Item create(Item item);
-    Item updateById(Item item);
+    Item updateById(UUID id, Item item);
     void deleteById(UUID id);
 }

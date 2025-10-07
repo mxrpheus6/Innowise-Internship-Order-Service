@@ -73,16 +73,16 @@ public class ItemDaoImpl implements ItemDao {
     }
 
     @Override
-    public Item updateById(Item item) {
+    public Item updateById(UUID id, Item item) {
         int updatedRows = jdbcTemplate.update(
                 SQL.UPDATE_BY_ID,
                 item.getName(),
                 item.getPrice(),
-                item.getId()
+                id
         );
 
         if (updatedRows == 0) {
-            throw new EmptyResultDataAccessException("Item with id " + item.getId() + " not found for update", 1);
+            throw new EmptyResultDataAccessException("Item with id " + id + " not found for update", 1);
         }
 
         return item;

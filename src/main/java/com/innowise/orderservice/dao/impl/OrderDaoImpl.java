@@ -80,16 +80,16 @@ public class OrderDaoImpl implements OrderDao {
     }
 
     @Override
-    public Order updateById(Order order) {
+    public Order updateById(UUID id, Order order) {
         int updatedRows = jdbcTemplate.update(
                 SQL.UPDATE_BY_ID,
                 order.getUserId(),
                 order.getStatus().name(),
-                order.getId()
+                id
         );
 
         if (updatedRows == 0) {
-            throw new EmptyResultDataAccessException("Order with id " + order.getId() + " not found for update", 1);
+            throw new EmptyResultDataAccessException("Order with id " + id + " not found for update", 1);
         }
 
         return order;
