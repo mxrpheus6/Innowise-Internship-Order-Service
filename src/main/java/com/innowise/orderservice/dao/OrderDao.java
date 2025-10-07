@@ -19,8 +19,9 @@ public interface OrderDao {
             .build();
 
     Optional<Order> findById(UUID id);
-    Optional<Order> findByStatus(Status status);
+    List<Order> findByStatus(Status status);
     List<Order> findByIds(Set<UUID> ids);
-    Order save(Order item);
+    Order create(Order order);
+    Order updateById(Order order);
     void deleteById(UUID id);
 }

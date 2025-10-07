@@ -1,7 +1,6 @@
 package com.innowise.orderservice.dao;
 
 import com.innowise.orderservice.model.Item;
-import com.innowise.orderservice.model.enums.Status;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +17,7 @@ public interface ItemDao {
 
     Optional<Item> findById(UUID id);
     List<Item> findByIds(Set<UUID> ids);
-    Item save(Item item);
+    Item create(Item item);
+    Item updateById(Item item);
     void deleteById(UUID id);
 }
