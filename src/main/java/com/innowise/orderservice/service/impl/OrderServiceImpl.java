@@ -153,7 +153,6 @@ public class OrderServiceImpl implements OrderService {
 
         existingOrder.setUserId(orderRequest.getUserId());
         existingOrder.setStatus(orderRequest.getStatus());
-        existingOrder.setCreationDate(orderRequest.getCreationDate());
 
         Order updatedOrder = orderDao.updateById(id, existingOrder);
 
