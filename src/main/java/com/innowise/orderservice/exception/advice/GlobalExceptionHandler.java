@@ -2,6 +2,10 @@ package com.innowise.orderservice.exception.advice;
 
 import com.innowise.orderservice.dto.exception.ExceptionDto;
 import com.innowise.orderservice.dto.exception.Validation;
+import com.innowise.orderservice.exception.custom.DuplicateItemInOrderException;
+import com.innowise.orderservice.exception.custom.ItemNotFoundException;
+import com.innowise.orderservice.exception.custom.OrderItemNotFoundException;
+import com.innowise.orderservice.exception.custom.OrderNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -43,6 +47,34 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ExceptionDto(LocalDateTime.now(), FIELD_VALIDATION_FAILED, validations));
+    }
+
+    @ExceptionHandler(DuplicateItemInOrderException.class)
+    public ResponseEntity<ExceptionDto> handleDuplicateItemInOrderException(DuplicateItemInOrderException e) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ExceptionDto(LocalDateTime.now(), e.getMessage(), null));
+    }
+
+    @ExceptionHandler(ItemNotFoundException.class)
+    public ResponseEntity<ExceptionDto> handleItemNotFoundException(ItemNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ExceptionDto(LocalDateTime.now(), e.getMessage(), null));
+    }
+
+    @ExceptionHandler(OrderItemNotFoundException.class)
+    public ResponseEntity<ExceptionDto> handleOrderItemNotFoundException(OrderItemNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ExceptionDto(LocalDateTime.now(), e.getMessage(), null));
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ExceptionDto> handleOrderNotFoundException(OrderNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ExceptionDto(LocalDateTime.now(), e.getMessage(), null));
     }
 
     @ExceptionHandler(Exception.class)
