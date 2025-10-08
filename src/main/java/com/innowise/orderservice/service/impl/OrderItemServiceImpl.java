@@ -122,9 +122,9 @@ public class OrderItemServiceImpl implements OrderItemService {
             throw new DuplicateItemInOrderException("Same items in one order");
         }
 
-        List<ItemResponse> existingItems = itemService.findByIds(itemIds);
+        List<ItemResponse> items = itemService.findByIds(itemIds);
 
-        if (existingItems.size() != itemIds.size()) {
+        if (items.size() != itemIds.size()) {
             throw new ItemNotFoundException("Some items in the order do not exist");
         }
 
@@ -133,8 +133,6 @@ public class OrderItemServiceImpl implements OrderItemService {
                 .toList();
 
         List<OrderItem> createdOrderItems = orderItemDao.createAll(orderItems);
-
-        List<ItemResponse> items = itemService.findByIds(itemIds);
 
         Map<UUID, ItemResponse> itemMap = items.stream()
                 .collect(Collectors.toMap(ItemResponse::getId, item -> item));
