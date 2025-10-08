@@ -1,6 +1,8 @@
 package com.innowise.orderservice.dto.request;
 
 import com.innowise.orderservice.model.enums.Status;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -12,9 +14,14 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class OrderRequest {
-    private UUID userId;
-    private Status status;
-    private OffsetDateTime creationDate;
 
+    @NotNull(message = "{order_request.user_id.null}")
+    private UUID userId;
+
+    @NotNull(message = "{order_request.user_id.null}")
+    private Status status;
+
+    @NotEmpty(message = "{order_request.order_items.empty}")
     private List<OrderItemRequest> orderItems;
+
 }

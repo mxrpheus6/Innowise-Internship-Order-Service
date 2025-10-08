@@ -3,6 +3,7 @@ package com.innowise.orderservice.controller;
 import com.innowise.orderservice.dto.request.ItemRequest;
 import com.innowise.orderservice.dto.response.ItemResponse;
 import com.innowise.orderservice.service.ItemService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -37,7 +38,7 @@ public class ItemController {
     }
 
     @PostMapping
-    public ResponseEntity<ItemResponse> create(@RequestBody ItemRequest itemRequest) {
+    public ResponseEntity<ItemResponse> create(@RequestBody @Valid ItemRequest itemRequest) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(itemService.create(itemRequest));
@@ -46,7 +47,7 @@ public class ItemController {
     @PutMapping("/{id}")
     public ResponseEntity<ItemResponse> updateById(
             @PathVariable UUID id,
-            @RequestBody ItemRequest itemRequest
+            @RequestBody @Valid ItemRequest itemRequest
     ) {
         return ResponseEntity.ok(itemService.update(id, itemRequest));
     }
