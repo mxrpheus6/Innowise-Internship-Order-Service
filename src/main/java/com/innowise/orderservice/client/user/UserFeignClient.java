@@ -13,7 +13,7 @@ public interface UserFeignClient {
     @GetMapping("/api/v1/users/{userId}")
     UserResponse getUserById(@PathVariable UUID userId);
 
-    @GetMapping("/api/v1/users/{userId}/batch")
+    @GetMapping("/api/v1/users/batch")
     List<UserResponse> getUsersByIds(@RequestParam List<UUID> ids);
 
 }

@@ -25,7 +25,7 @@ public class ItemDaoImpl implements ItemDao {
                 """
                 insert into items (name, price)
                 values (?, ?)
-                returning id, name, price
+                returning *
                 """;
         static final String UPDATE_BY_ID =
                 """
@@ -33,6 +33,7 @@ public class ItemDaoImpl implements ItemDao {
                 set name = ?,
                     price = ?
                 where id = ?
+                returning *
                 """;
 
         static final String DELETE_BY_ID = "delete from items where id = ?";
@@ -74,18 +75,19 @@ public class ItemDaoImpl implements ItemDao {
 
     @Override
     public Item updateById(UUID id, Item item) {
-        int updatedRows = jdbcTemplate.update(
+        Item updatedItem = jdbcTemplate.queryForObject(
                 SQL.UPDATE_BY_ID,
+                ROW_MAPPER,
                 item.getName(),
                 item.getPrice(),
                 id
         );
 
-        if (updatedRows == 0) {
-            throw new EmptyResultDataAccessException("Item with id " + id + " not found for update", 1);
+        if (updatedItem == null) {
+            throw new EmptyResultDataAccessException("Item not found for update", 1);
         }
 
-        return item;
+        return updatedItem;
     }
 
     @Override
