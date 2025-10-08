@@ -1,5 +1,7 @@
 package com.innowise.orderservice.service.impl;
 
+import com.innowise.orderservice.client.user.UserFeignClient;
+import com.innowise.orderservice.client.user.UserResponse;
 import com.innowise.orderservice.dao.OrderDao;
 import com.innowise.orderservice.dto.request.OrderRequest;
 import com.innowise.orderservice.dto.response.OrderItemResponse;
@@ -27,15 +29,19 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemService orderItemService;
     private final OrderMapper orderMapper;
 
+    private final UserFeignClient userFeignClient;
+
     @Override
     public OrderResponse findById(UUID id) {
         Order order = orderDao.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));
 
         List<OrderItemResponse> items = orderItemService.findByOrderId(id);
+        UserResponse user = userFeignClient.getUserById(order.getUserId());
 
         OrderResponse response = orderMapper.toResponse(order);
         response.setItems(items);
+        response.setUser(user);
         return response;
     }
 
@@ -50,7 +56,16 @@ public class OrderServiceImpl implements OrderService {
                 .map(Order::getId)
                 .toList();
 
+        List<UUID> userIds = orders.stream()
+                .map(Order::getUserId)
+                .toList();
+
         List<OrderItemResponse> allItems = orderItemService.findByOrderIds(Set.copyOf(orderIds));
+
+        List<UserResponse> users = userFeignClient.getUsersByIds(userIds);
+        Map<UUID, UserResponse> usersById = users.stream()
+                .collect(Collectors.toMap(UserResponse::getId, u -> u));
+
 
         Map<UUID, List<OrderItemResponse>> itemsByOrderId = allItems.stream()
                 .collect(Collectors.groupingBy(OrderItemResponse::getOrderId));
@@ -58,8 +73,8 @@ public class OrderServiceImpl implements OrderService {
         return orders.stream()
                 .map(order -> {
                     OrderResponse response = orderMapper.toResponse(order);
-                    List<OrderItemResponse> items = itemsByOrderId.getOrDefault(order.getId(), List.of());
-                    response.setItems(items);
+                    response.setItems(itemsByOrderId.getOrDefault(order.getId(), List.of()));
+                    response.setUser(usersById.get(order.getUserId()));
                     return response;
                 })
                 .toList();
@@ -80,7 +95,16 @@ public class OrderServiceImpl implements OrderService {
                 .map(Order::getId)
                 .toList();
 
+        List<UUID> userIds = orders.stream()
+                .map(Order::getUserId)
+                .toList();
+
         List<OrderItemResponse> allItems = orderItemService.findByOrderIds(Set.copyOf(orderIds));
+
+        List<UserResponse> users = userFeignClient.getUsersByIds(userIds);
+        Map<UUID, UserResponse> usersById = users.stream()
+                .collect(Collectors.toMap(UserResponse::getId, u -> u));
+
 
         Map<UUID, List<OrderItemResponse>> itemsByOrderId = allItems.stream()
                 .collect(Collectors.groupingBy(OrderItemResponse::getOrderId));
@@ -88,8 +112,8 @@ public class OrderServiceImpl implements OrderService {
         return orders.stream()
                 .map(order -> {
                     OrderResponse response = orderMapper.toResponse(order);
-                    List<OrderItemResponse> items = itemsByOrderId.getOrDefault(order.getId(), List.of());
-                    response.setItems(items);
+                    response.setItems(itemsByOrderId.getOrDefault(order.getId(), List.of()));
+                    response.setUser(usersById.get(order.getUserId()));
                     return response;
                 })
                 .toList();
@@ -98,6 +122,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse create(OrderRequest orderRequest) {
+        UserResponse user = userFeignClient.getUserById(orderRequest.getUserId());
+
         Order order = orderMapper.toEntity(orderRequest);
 
         Order savedOrder = orderDao.create(order);
@@ -111,6 +137,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderResponse response = orderMapper.toResponse(savedOrder);
         response.setItems(savedItems);
+        response.setUser(user);
 
         return response;
     }
@@ -118,6 +145,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse updateById(UUID id, OrderRequest orderRequest) {
+        UserResponse user = userFeignClient.getUserById(orderRequest.getUserId());
+
+
         Order existingOrder = orderDao.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));
 
@@ -138,6 +168,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderResponse response = orderMapper.toResponse(updatedOrder);
         response.setItems(updatedItems);
+        response.setUser(user);
 
         return response;
     }

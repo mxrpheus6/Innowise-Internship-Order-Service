@@ -1,5 +1,6 @@
 package com.innowise.orderservice.dto.response;
 
+import com.innowise.orderservice.client.user.UserResponse;
 import com.innowise.orderservice.model.enums.Status;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class OrderResponse {
     private UUID id;
-    private UUID userId;
+    private UserResponse user;
     private Status status;
     private OffsetDateTime creationDate;
 
