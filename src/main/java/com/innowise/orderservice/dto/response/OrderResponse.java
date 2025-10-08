@@ -2,6 +2,7 @@ package com.innowise.orderservice.dto.response;
 
 import com.innowise.orderservice.model.enums.Status;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,4 +16,6 @@ public class OrderResponse {
     private UUID userId;
     private Status status;
     private OffsetDateTime creationDate;
+
+    private List<OrderItemResponse> items;
 }

@@ -27,7 +27,7 @@ public class OrderDaoImpl implements OrderDao {
                 """
                 insert into orders (user_id, status, creation_date)
                 values (?, ?, CURRENT_TIMESTAMP)
-                returning id, user_id, status, creation_date
+                returning *
                 """;
         static final String UPDATE_BY_ID =
                 """
@@ -35,6 +35,7 @@ public class OrderDaoImpl implements OrderDao {
                 set user_id = ?,
                     status = ?
                 where id = ?
+                returning *
                 """;
 
         static final String DELETE_BY_ID = "delete from orders where id = ?";
@@ -81,18 +82,19 @@ public class OrderDaoImpl implements OrderDao {
 
     @Override
     public Order updateById(UUID id, Order order) {
-        int updatedRows = jdbcTemplate.update(
+        Order updatedOrder = jdbcTemplate.queryForObject(
                 SQL.UPDATE_BY_ID,
+                ROW_MAPPER,
                 order.getUserId(),
                 order.getStatus().name(),
                 id
         );
 
-        if (updatedRows == 0) {
-            throw new EmptyResultDataAccessException("Order with id " + id + " not found for update", 1);
+        if (updatedOrder == null) {
+            throw new EmptyResultDataAccessException("Order not found for update", 1);
         }
 
-        return order;
+        return updatedOrder;
     }
 
     @Override
