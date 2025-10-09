@@ -13,12 +13,16 @@ public class FeignClientConfig {
     public RequestInterceptor headerForwardingInterceptor() {
         return template -> {
             ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            if (attrs != null) {
-                String token = attrs.getRequest().getHeader("Authorization");
-                if (token != null) {
-                    template.header("Authorization", token);
-                }
+            if (attrs == null) {
+                return;
             }
+
+            String token = attrs.getRequest().getHeader("Authorization");
+            if (token == null) {
+                return;
+            }
+
+            template.header("Authorization", token);
         };
     }
 

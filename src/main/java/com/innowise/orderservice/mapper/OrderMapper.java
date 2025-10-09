@@ -5,9 +5,10 @@ import com.innowise.orderservice.dto.response.OrderResponse;
 import com.innowise.orderservice.model.Order;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants.ComponentModel;
 
 @Mapper(
-        componentModel = "spring",
+        componentModel = ComponentModel.SPRING,
         injectionStrategy = InjectionStrategy.CONSTRUCTOR
 )
 public interface OrderMapper {
