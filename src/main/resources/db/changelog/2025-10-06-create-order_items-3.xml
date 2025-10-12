@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+  <changeSet id="2025-10-06-create-order_items-3" author="Pavel Kazachenko">
+    <createTable tableName="order_items">
+      <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="order_id" type="UUID">
+        <constraints nullable="false"/>
+      </column>
+      <column name="item_id" type="UUID">
+        <constraints nullable="false"/>
+      </column>
+      <column name="quantity" type="INT">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addForeignKeyConstraint
+      baseTableName="order_items"
+      baseColumnNames="order_id"
+      constraintName="fk_order_items_orders"
+      referencedTableName="orders"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <addForeignKeyConstraint
+      baseTableName="order_items"
+      baseColumnNames="item_id"
+      constraintName="fk_order_items_items"
+      referencedTableName="items"
+      referencedColumnNames="id"/>
+
+    <createIndex tableName="order_items" indexName="idx_order_items_order_id">
+      <column name="order_id"/>
+    </createIndex>
+
+    <createIndex tableName="order_items" indexName="idx_order_items_item_id">
+      <column name="item_id"/>
+    </createIndex>
+
+    <addUniqueConstraint
+      tableName="order_items"
+      columnNames="order_id, item_id"
+      constraintName="uc_order_items_order_item_unique"/>
+  </changeSet>
+
+</databaseChangeLog>

@@ -22,6 +22,7 @@
 		<jakarta.validation-api.version>3.1.0</jakarta.validation-api.version>
 		<org.liquibase.version>4.31.1</org.liquibase.version>
 		<org.postgresql.version>42.7.7</org.postgresql.version>
+		<spring-cloud-starter-openfeign.version>4.3.0</spring-cloud-starter-openfeign.version>
 	</properties>
 
 	<dependencies>
@@ -32,13 +33,14 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+			<version>${spring-cloud-starter-openfeign.version}</version>
+	</dependency>
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
