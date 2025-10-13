@@ -1,5 +1,6 @@
 package com.innowise.orderservice.service.impl;
 
+import com.innowise.orderservice.client.user.UserFeignClient;
 import com.innowise.orderservice.dao.OrderDao;
 import com.innowise.orderservice.dto.request.OrderRequest;
 import com.innowise.orderservice.dto.response.OrderResponse;
@@ -43,13 +44,13 @@ class OrderServiceImplTest {
     private OrderMapper orderMapper;
 
     @Mock
-    private com.innowise.orderservice.client.user.UserFeignClient userFeignClient;
+    private UserFeignClient userFeignClient;
 
     @InjectMocks
     private OrderServiceImpl orderService;
 
     @Test
-    void testFindByIdSuccess() {
+    void givenExistingOrder_whenFindById_thenReturnOrderResponseWithItemsAndUser() {
         Order order = new Order(ORDER_ID, USER_ID, Status.NEW, OffsetDateTime.now());
         OrderResponse response = new OrderResponse(ORDER_ID, null, Status.NEW, order.getCreationDate(), List.of());
 
@@ -67,14 +68,14 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void testFindByIdNotFound() {
+    void givenNonExistingOrder_whenFindById_thenThrowOrderNotFoundException() {
         when(orderDao.findById(ORDER_ID)).thenReturn(Optional.empty());
         assertThrows(OrderNotFoundException.class, () -> orderService.findById(ORDER_ID));
         verify(orderDao).findById(ORDER_ID);
     }
 
     @Test
-    void testFindByStatus() {
+    void givenOrdersWithStatus_whenFindByStatus_thenReturnOrderResponsesWithItemsAndUsers() {
         Order order = new Order(ORDER_ID, USER_ID, Status.NEW, OffsetDateTime.now());
         OrderResponse response = new OrderResponse(ORDER_ID, null, Status.NEW, order.getCreationDate(), List.of());
 
@@ -91,7 +92,7 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void testCreate() {
+    void givenValidOrderRequest_whenCreate_thenPersistOrderAndReturnResponseWithItemsAndUser() {
         Order orderEntity = new Order(null, USER_ID, Status.NEW, OffsetDateTime.now());
         Order savedOrder = new Order(ORDER_ID, USER_ID, Status.NEW, OffsetDateTime.now());
         OrderRequest orderRequest = new OrderRequest(USER_ID, Status.NEW, List.of(ORDER_ITEM_REQUEST));
@@ -111,7 +112,7 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void testUpdateById() {
+    void givenExistingOrderAndValidUpdateRequest_whenUpdateById_thenUpdateOrderAndReturnResponseWithItemsAndUser() {
         Order existingOrder = new Order(ORDER_ID, USER_ID, Status.NEW, OffsetDateTime.now());
         Order updatedOrder = new Order(ORDER_ID, USER_ID, Status.NEW, OffsetDateTime.now());
         OrderRequest orderRequest = new OrderRequest(USER_ID, Status.NEW, List.of(ORDER_ITEM_REQUEST));
@@ -135,7 +136,7 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void testDeleteById() {
+    void givenOrderId_whenDeleteById_thenInvokeDaoDelete() {
         doNothing().when(orderDao).deleteById(ORDER_ID);
         orderService.deleteById(ORDER_ID);
         verify(orderDao).deleteById(ORDER_ID);

@@ -46,8 +46,9 @@ class OrderItemServiceImplTest {
     @InjectMocks
     private OrderItemServiceImpl orderItemService;
 
+
     @Test
-    void testFindByIdSuccess() {
+    void givenExistingOrderItem_whenFindById_thenReturnResponseWithItem() {
         when(orderItemDao.findById(ORDER_ITEM_ID)).thenReturn(Optional.of(ORDER_ITEM));
         when(itemService.findById(ITEM_ID)).thenReturn(ITEM_RESPONSE);
         when(orderItemMapper.toResponse(ORDER_ITEM)).thenReturn(
@@ -63,14 +64,14 @@ class OrderItemServiceImplTest {
     }
 
     @Test
-    void testFindByIdNotFound() {
+    void givenNonExistingOrderItem_whenFindById_thenThrowException() {
         when(orderItemDao.findById(ORDER_ITEM_ID)).thenReturn(Optional.empty());
         assertThrows(OrderItemNotFoundException.class, () -> orderItemService.findById(ORDER_ITEM_ID));
         verify(orderItemDao).findById(ORDER_ITEM_ID);
     }
 
     @Test
-    void testFindByOrderIdSuccess() {
+    void givenExistingOrderItems_whenFindByOrderId_thenReturnMappedResponses() {
         when(orderItemDao.findByOrderId(ORDER_ID)).thenReturn(List.of(ORDER_ITEM));
         when(itemService.findByIds(ITEM_IDS)).thenReturn(List.of(ITEM_RESPONSE));
         when(orderItemMapper.toResponse(ORDER_ITEM))
@@ -87,14 +88,14 @@ class OrderItemServiceImplTest {
     }
 
     @Test
-    void testFindByOrderIdEmpty() {
+    void givenNoOrderItems_whenFindByOrderId_thenReturnEmptyList() {
         when(orderItemDao.findByOrderId(ORDER_ID)).thenReturn(List.of());
         List<OrderItemResponse> result = orderItemService.findByOrderId(ORDER_ID);
         assertThat(result).isEmpty();
     }
 
     @Test
-    void testFindByOrderIdAndItemIdSuccess() {
+    void givenExistingOrderItem_whenFindByOrderIdAndItemId_thenReturnResponse() {
         when(orderItemDao.findByOrderIdAndItemId(ORDER_ID, ITEM_ID)).thenReturn(Optional.of(ORDER_ITEM));
         when(orderItemMapper.toResponse(ORDER_ITEM)).thenReturn(ORDER_ITEM_RESPONSE);
 
@@ -105,14 +106,14 @@ class OrderItemServiceImplTest {
     }
 
     @Test
-    void testFindByOrderIdAndItemIdNotFound() {
+    void givenNonExistingOrderItem_whenFindByOrderIdAndItemId_thenThrowException() {
         when(orderItemDao.findByOrderIdAndItemId(ORDER_ID, ITEM_ID)).thenReturn(Optional.empty());
         assertThrows(OrderItemNotFoundException.class,
                 () -> orderItemService.findByOrderIdAndItemId(ORDER_ID, ITEM_ID));
     }
 
     @Test
-    void testCreateAllSuccess() {
+    void givenValidOrderItems_whenCreateAll_thenPersistAndReturnResponses() {
         when(itemService.findByIds(ITEM_IDS)).thenReturn(List.of(ITEM_RESPONSE));
         when(orderItemMapper.toEntity(ORDER_ITEM_REQUEST)).thenReturn(ORDER_ITEM);
         when(orderItemDao.createAll(List.of(ORDER_ITEM))).thenReturn(List.of(ORDER_ITEM));
@@ -126,7 +127,7 @@ class OrderItemServiceImplTest {
     }
 
     @Test
-    void testCreateAllDuplicateItems() {
+    void givenDuplicateItems_whenCreateAll_thenThrowDuplicateItemException() {
         List<OrderItemRequest> duplicates = List.of(
                 ORDER_ITEM_REQUEST,
                 new OrderItemRequest(ORDER_ID, ITEM_ID, 3)
@@ -136,33 +137,33 @@ class OrderItemServiceImplTest {
     }
 
     @Test
-    void testCreateAllItemNotFound() {
+    void givenMissingItems_whenCreateAll_thenThrowItemNotFoundException() {
         when(itemService.findByIds(ITEM_IDS)).thenReturn(List.of());
         assertThrows(ItemNotFoundException.class, () -> orderItemService.createAll(List.of(ORDER_ITEM_REQUEST)));
     }
 
     @Test
-    void testCreateAllEmptyList() {
+    void givenEmptyOrderItemList_whenCreateAll_thenReturnEmptyList() {
         List<OrderItemResponse> result = orderItemService.createAll(List.of());
         assertThat(result).isEmpty();
     }
 
     @Test
-    void testDeleteById() {
+    void givenOrderItemId_whenDeleteById_thenDaoMethodInvoked() {
         doNothing().when(orderItemDao).deleteById(ORDER_ITEM_ID);
         orderItemService.deleteById(ORDER_ITEM_ID);
         verify(orderItemDao).deleteById(ORDER_ITEM_ID);
     }
 
     @Test
-    void testDeleteByOrderId() {
+    void givenOrderId_whenDeleteByOrderId_thenDaoMethodInvoked() {
         doNothing().when(orderItemDao).deleteByOrderId(ORDER_ID);
         orderItemService.deleteByOrderId(ORDER_ID);
         verify(orderItemDao).deleteByOrderId(ORDER_ID);
     }
 
     @Test
-    void testDeleteByItemId() {
+    void givenItemId_whenDeleteByItemId_thenDaoMethodInvoked() {
         doNothing().when(orderItemDao).deleteByItemId(ITEM_ID);
         orderItemService.deleteByItemId(ITEM_ID);
         verify(orderItemDao).deleteByItemId(ITEM_ID);
