@@ -37,6 +37,12 @@ public final class TestConstants {
             .item(ITEM_RESPONSE)
             .quantity(QUANTITY)
             .build();
+    public static final OrderItem SAVED_ORDER_ITEM = new OrderItem(
+            ORDER_ITEM_ID,
+            ORDER_ID,
+            ITEM_ID,
+            QUANTITY
+    );
 
     public static final UUID USER_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
     public static final String USER_NAME = "John";
@@ -44,12 +50,41 @@ public final class TestConstants {
     public static final LocalDate USER_BIRTH_DATE = LocalDate.of(1990, 1, 1);
     public static final String USER_EMAIL = "john.doe@example.com";
 
+    public static final String GET_USER_BY_ID_URL = "/api/v1/users/";
+    public static final String GET_USERS_BY_IDS_URL = "/api/v1/users/batch";
+
     public static final UserResponse USER_RESPONSE = new UserResponse(
             USER_ID,
             USER_NAME,
             USER_SURNAME,
             USER_BIRTH_DATE,
             USER_EMAIL
+    );
+
+    public static final UUID USER_ID_2 = UUID.fromString("44444444-4444-4444-4444-444444444444");
+    public static final String USER_NAME_2 = "Bob";
+    public static final String USER_SURNAME_2 = "Johnson";
+    public static final LocalDate USER_BIRTH_DATE_2 = LocalDate.of(1992, 3, 10);
+    public static final String USER_EMAIL_2 = "bob.johnson@example.com";
+    public static final UserResponse USER_RESPONSE_2 = new UserResponse(
+            USER_ID_2,
+            USER_NAME_2,
+            USER_SURNAME_2,
+            USER_BIRTH_DATE_2,
+            USER_EMAIL_2
+    );
+
+    public static final UUID USER_ID_3 = UUID.fromString("55555555-5555-5555-5555-555555555555");
+    public static final String USER_NAME_3 = "Charlie";
+    public static final String USER_SURNAME_3 = "Williams";
+    public static final LocalDate USER_BIRTH_DATE_3 = LocalDate.of(1995, 2, 28);
+    public static final String USER_EMAIL_3 = "charlie.williams@example.com";
+    public static final UserResponse USER_RESPONSE_3 = new UserResponse(
+            USER_ID_3,
+            USER_NAME_3,
+            USER_SURNAME_3,
+            USER_BIRTH_DATE_3,
+            USER_EMAIL_3
     );
 
 }
