@@ -38,7 +38,7 @@ class ItemServiceImplTest {
     private ItemServiceImpl itemService;
 
     @Test
-    void testFindByIdSuccess() {
+    void givenExistingItem_whenFindById_thenReturnItemResponse() {
         when(itemDao.findById(ITEM_ID)).thenReturn(Optional.of(ITEM));
         when(itemMapper.toResponse(ITEM)).thenReturn(ITEM_RESPONSE);
 
@@ -50,7 +50,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void testFindByIdNotFound() {
+    void givenNonExistingItem_whenFindById_thenThrowItemNotFoundException() {
         when(itemDao.findById(ITEM_ID)).thenReturn(Optional.empty());
 
         assertThrows(ItemNotFoundException.class, () -> itemService.findById(ITEM_ID));
@@ -60,7 +60,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void testFindByIds() {
+    void givenExistingItems_whenFindByIds_thenReturnMappedItemResponses() {
         when(itemDao.findByIds(ITEM_IDS)).thenReturn(List.of(ITEM));
         when(itemMapper.toResponse(ITEM)).thenReturn(ITEM_RESPONSE);
 
@@ -72,7 +72,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void testCreate() {
+    void givenValidItem_whenCreate_thenPersistAndReturnItemResponse() {
         when(itemMapper.toEntity(ITEM_REQUEST)).thenReturn(ITEM);
         when(itemDao.create(ITEM)).thenReturn(ITEM);
         when(itemMapper.toResponse(ITEM)).thenReturn(ITEM_RESPONSE);
@@ -86,7 +86,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void testUpdate() {
+    void givenExistingItem_whenUpdate_thenPersistAndReturnUpdatedItemResponse() {
         when(itemMapper.toEntity(ITEM_REQUEST)).thenReturn(ITEM);
         when(itemDao.updateById(ITEM_ID, ITEM)).thenReturn(ITEM);
         when(itemMapper.toResponse(ITEM)).thenReturn(ITEM_RESPONSE);
@@ -100,7 +100,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void testDeleteById() {
+    void givenItemId_whenDeleteById_thenInvokeDaoDelete() {
         doNothing().when(itemDao).deleteById(ITEM_ID);
 
         itemService.deleteById(ITEM_ID);
@@ -108,4 +108,3 @@ class ItemServiceImplTest {
         verify(itemDao).deleteById(ITEM_ID);
     }
 }
-
