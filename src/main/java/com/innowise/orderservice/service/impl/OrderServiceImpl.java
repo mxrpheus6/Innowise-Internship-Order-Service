@@ -7,11 +7,15 @@ import com.innowise.orderservice.dto.request.OrderRequest;
 import com.innowise.orderservice.dto.response.OrderItemResponse;
 import com.innowise.orderservice.dto.response.OrderResponse;
 import com.innowise.orderservice.exception.custom.OrderNotFoundException;
+import com.innowise.orderservice.kafka.consumer.PaymentStatus;
+import com.innowise.orderservice.kafka.producer.OrderCreatedEventProducer;
+import com.innowise.orderservice.kafka.producer.OrderCreatedEvent;
 import com.innowise.orderservice.mapper.OrderMapper;
 import com.innowise.orderservice.model.Order;
 import com.innowise.orderservice.model.enums.Status;
 import com.innowise.orderservice.service.OrderItemService;
 import com.innowise.orderservice.service.OrderService;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +34,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
 
     private final UserFeignClient userFeignClient;
+
+    private final OrderCreatedEventProducer orderCreatedEventProducer;
 
     @Override
     public OrderResponse findById(UUID id) {
@@ -119,12 +125,25 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
+    private BigDecimal calculateTotalAmount(OrderResponse orderResponse) {
+        if (orderResponse.getItems() == null || orderResponse.getItems().isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        return orderResponse.getItems().stream()
+                .filter(item -> item.getItem() != null && item.getItem().getPrice() != null)
+                .map(item -> item.getItem().getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     @Override
     @Transactional
     public OrderResponse create(OrderRequest orderRequest) {
         UserResponse user = userFeignClient.getUserById(orderRequest.getUserId());
 
         Order order = orderMapper.toEntity(orderRequest);
+        order.setStatus(Status.NEW);
 
         Order savedOrder = orderDao.create(order);
 
@@ -139,6 +158,12 @@ public class OrderServiceImpl implements OrderService {
         response.setItems(savedItems);
         response.setUser(user);
 
+        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(
+                response.getId(),
+                response.getUser().getId(),
+                calculateTotalAmount(response));
+        orderCreatedEventProducer.send(orderCreatedEvent);
+
         return response;
     }
 
@@ -152,7 +177,6 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));
 
         existingOrder.setUserId(orderRequest.getUserId());
-        existingOrder.setStatus(orderRequest.getStatus());
 
         Order updatedOrder = orderDao.updateById(id, existingOrder);
 
@@ -177,4 +201,17 @@ public class OrderServiceImpl implements OrderService {
     public void deleteById(UUID id) {
         orderDao.deleteById(id);
     }
+
+    @Override
+    public OrderResponse updateStatusById(UUID id, PaymentStatus paymentStatus) {
+        Order existingOrder = orderDao.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+
+        existingOrder.setStatus(paymentStatus == PaymentStatus.SUCCESS ? Status.PAID : Status.CANCELLED);
+
+        Order updatedOrder = orderDao.updateById(id, existingOrder);
+
+        return orderMapper.toResponse(updatedOrder);
+    }
+
 }

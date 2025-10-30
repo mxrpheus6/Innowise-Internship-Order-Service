@@ -10,6 +10,7 @@ import com.innowise.orderservice.model.Order;
 import com.innowise.orderservice.model.enums.Status;
 import java.util.List;
 import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,25 +18,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import org.wiremock.spring.EnableWireMock;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.matching;
-import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "user.service.url=${wiremock.server.baseUrl}"
+                "user.service.url=${wiremock.server.baseUrl}",
         }
 )
 @EnableWireMock
@@ -44,11 +41,30 @@ class OrderServiceImplIntegrationTest {
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17-alpine");
 
+    @Container
+    static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.0.1"));
+
+    private static final String ORDER_CREATED_TOPIC = "test-order-created";
+    private static final String PAYMENT_STATUS_TOPIC = "test-payment-status";
+
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+
+        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
+        registry.add("app.kafka.order-created-topic", () -> ORDER_CREATED_TOPIC);
+        registry.add("app.kafka.payment-status-topic", () -> PAYMENT_STATUS_TOPIC);
+        registry.add("spring.kafka.consumer.group-id", () -> "test-payment-consumer-group");
+        registry.add("spring.kafka.producer.key-serializer",
+                () -> "org.apache.kafka.common.serialization.StringSerializer");
+        registry.add("spring.kafka.producer.value-serializer",
+                () -> "org.springframework.kafka.support.serializer.JsonSerializer");
+        registry.add("spring.kafka.consumer.value-deserializer",
+                () -> "org.springframework.kafka.support.serializer.JsonDeserializer");
+        registry.add("spring.kafka.consumer.properties.spring.json.trusted.packages",
+                () -> "*");
     }
 
     @Autowired
@@ -70,7 +86,6 @@ class OrderServiceImplIntegrationTest {
         Order order = new Order();
         order.setUserId(userId);
         order.setStatus(Status.NEW);
-
         Order saved = orderDao.create(order);
         orderId = saved.getId();
     }
@@ -90,7 +105,6 @@ class OrderServiceImplIntegrationTest {
         assertEquals(1, result.size());
 
         OrderResponse response = result.getFirst();
-
         assertEquals(orderId, response.getId());
         assertEquals(userId, response.getUser().getId());
         assertEquals(TestConstants.USER_NAME, response.getUser().getName());
@@ -124,7 +138,6 @@ class OrderServiceImplIntegrationTest {
 
         OrderRequest request = new OrderRequest();
         request.setUserId(newUserId);
-        request.setStatus(Status.NEW);
 
         OrderResponse response = orderService.create(request);
 
@@ -146,24 +159,20 @@ class OrderServiceImplIntegrationTest {
 
         OrderRequest updateRequest = new OrderRequest();
         updateRequest.setUserId(TestConstants.USER_ID_3);
-        updateRequest.setStatus(Status.SHIPPED);
 
         OrderResponse updated = orderService.updateById(orderId, updateRequest);
 
         assertNotNull(updated);
         assertEquals(orderId, updated.getId());
-        assertEquals(Status.SHIPPED, updated.getStatus());
         assertEquals(TestConstants.USER_NAME_3, updated.getUser().getName());
 
         Order fromDb = orderDao.findById(orderId).orElseThrow();
-        assertEquals(Status.SHIPPED, fromDb.getStatus());
     }
 
     @Test
     @Transactional
     void givenOrderId_whenDeleteById_thenRemoveOrderFromDb() {
         orderService.deleteById(orderId);
-
         assertTrue(orderDao.findById(orderId).isEmpty());
     }
 }

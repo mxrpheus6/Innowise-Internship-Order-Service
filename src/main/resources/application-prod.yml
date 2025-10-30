@@ -8,6 +8,9 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: ${DB_DRIVER}
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
 user:
   service:
     url: ${USER_SERVICE_URL}
