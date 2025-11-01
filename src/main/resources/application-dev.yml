@@ -10,6 +10,9 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:29092
+    topics:
+      create-payment: CREATE_PAYMENT
+      create-order: CREATE_ORDER
 
 
 user:

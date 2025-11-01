@@ -11,7 +11,7 @@ public class PaymentCreatedEventConsumer {
 
     private final OrderService orderService;
 
-    @KafkaListener(topics = "CREATE_PAYMENT")
+    @KafkaListener(topics = "${kafka.topics.create-payment}")
     public void consume(PaymentCreatedEvent event) {
         orderService.updateStatusById(event.getOrderId(), event.getPaymentStatus());
     }

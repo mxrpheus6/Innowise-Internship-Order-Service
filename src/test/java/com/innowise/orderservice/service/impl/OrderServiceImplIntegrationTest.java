@@ -33,6 +33,8 @@ import static org.junit.jupiter.api.Assertions.*;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
                 "user.service.url=${wiremock.server.baseUrl}",
+                "kafka.topics.create-payment=CREATE_PAYMENT",
+                "kafka.topics.create-order=CREATE_ORDER"
         }
 )
 @EnableWireMock

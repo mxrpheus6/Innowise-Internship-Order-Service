@@ -10,6 +10,9 @@ spring:
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    topics:
+      create-payment: ${KAFKA_TOPICS_CREATE_PAYMENT}
+      create-order: ${KAFKA_TOPICS_CREATE_ORDER}
 
 user:
   service:

@@ -28,7 +28,9 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "user.service.url=none"
+                "user.service.url=mock",
+                "kafka.topics.create-payment=mock",
+                "kafka.topics.create-order=mock"
         }
 )
 public class ItemServiceImplIntegrationTest {
