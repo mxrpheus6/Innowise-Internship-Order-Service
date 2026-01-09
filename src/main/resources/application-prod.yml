@@ -17,3 +17,7 @@ spring:
 user:
   service:
     url: ${USER_SERVICE_URL}
+
+authservice:
+  api:
+    url: ${AUTHSERVICE_API_URL}
