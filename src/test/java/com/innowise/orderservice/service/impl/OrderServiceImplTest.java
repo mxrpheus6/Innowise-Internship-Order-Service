@@ -5,6 +5,7 @@ import com.innowise.orderservice.dao.OrderDao;
 import com.innowise.orderservice.dto.request.OrderRequest;
 import com.innowise.orderservice.dto.response.OrderResponse;
 import com.innowise.orderservice.exception.custom.OrderNotFoundException;
+import com.innowise.orderservice.kafka.producer.OrderCreatedEventProducer;
 import com.innowise.orderservice.mapper.OrderMapper;
 import com.innowise.orderservice.model.Order;
 import com.innowise.orderservice.model.enums.Status;
@@ -45,6 +46,9 @@ class OrderServiceImplTest {
 
     @Mock
     private UserFeignClient userFeignClient;
+
+    @Mock
+    private OrderCreatedEventProducer orderCreatedEventProducer;
 
     @InjectMocks
     private OrderServiceImpl orderService;

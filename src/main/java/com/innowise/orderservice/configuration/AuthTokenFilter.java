@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,7 +22,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 class AuthTokenFilter extends OncePerRequestFilter {
 
     private final RestTemplate restTemplate;
-    private final String authServiceUrl = "http://host.docker.internal:4001/api/v1/auth/validate";
+
+    @Value("${authservice.api.url}")
+    private String authServiceUrl;
 
     @Override
     protected void doFilterInternal(
@@ -29,6 +32,13 @@ class AuthTokenFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+
+        if (uri.startsWith("/actuator")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (header == null || !header.startsWith("Bearer ")) {

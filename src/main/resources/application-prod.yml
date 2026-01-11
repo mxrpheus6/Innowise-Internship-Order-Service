@@ -8,6 +8,16 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: ${DB_DRIVER}
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    topics:
+      create-payment: ${KAFKA_TOPICS_CREATE_PAYMENT}
+      create-order: ${KAFKA_TOPICS_CREATE_ORDER}
+
 user:
   service:
     url: ${USER_SERVICE_URL}
+
+authservice:
+  api:
+    url: ${AUTHSERVICE_API_URL}
