@@ -5,13 +5,22 @@ spring:
     import: optional:file:.env[.properties]
   liquibase:
     change-log: classpath:db/changelog/app-changelog.xml
+
   kafka:
+
+    template:
+      observation-enabled: true
+
+    listener:
+      observation-enabled: true
+
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: false
     consumer:
+
       group-id: order-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
@@ -24,13 +33,18 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info"
-  endpoint:
-    health:
-      probes:
-        enabled: true
+        include: "prometheus,health,info,metrics"
+        
   health:
     livenessState:
       enabled: true
     readinessState:
       enabled: true
+
+  zipkin:
+    tracing:
+      endpoint: ${TEMPO_ZIPKIN}/api/v2/spans
+
+  tracing:
+    sampling:
+      probability: 1.0

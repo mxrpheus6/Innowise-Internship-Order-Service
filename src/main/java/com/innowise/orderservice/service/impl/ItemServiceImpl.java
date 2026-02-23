@@ -22,6 +22,13 @@ public class ItemServiceImpl implements ItemService {
     private final ItemMapper itemMapper;
 
     @Override
+    public List<ItemResponse> findAll() {
+        return itemDao.findAll().stream()
+                .map(itemMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     public ItemResponse findById(UUID id) {
         Item item = itemDao.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found"));

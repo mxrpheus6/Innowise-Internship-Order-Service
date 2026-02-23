@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface ItemService {
+    List<ItemResponse> findAll();
     ItemResponse findById(UUID id);
     List<ItemResponse> findByIds(Set<UUID> ids);
     ItemResponse create(ItemRequest itemRequest);
