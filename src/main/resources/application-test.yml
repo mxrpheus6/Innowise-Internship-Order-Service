@@ -1,0 +1,29 @@
+server:
+  port: 4002
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5435/orders_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+kafka:
+  topics:
+    create-payment: CREATE_PAYMENT
+    create-order: CREATE_ORDER
+
+management:
+  zipkin:
+    tracing:
+      endpoint: mock
+
+user:
+  service:
+    url: http://localhost:4000
+
+feign:
+  client:
+    config:
+      default:
+        request-interceptors: []
