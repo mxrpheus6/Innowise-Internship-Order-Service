@@ -27,6 +27,11 @@ public class ItemController {
 
     private final ItemService itemService;
 
+    @GetMapping
+    public ResponseEntity<List<ItemResponse>> getAll() {
+        return ResponseEntity.ok(itemService.findAll());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ItemResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(itemService.findById(id));

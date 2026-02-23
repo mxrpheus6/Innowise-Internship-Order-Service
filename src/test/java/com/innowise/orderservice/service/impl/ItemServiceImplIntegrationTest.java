@@ -15,7 +15,12 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.KafkaContainer;
@@ -28,11 +33,12 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "user.service.url=mock",
-                "kafka.topics.create-payment=mock",
-                "kafka.topics.create-order=mock"
+                "user.service.url=mock"
         }
 )
+@ActiveProfiles("test")
+@AutoConfigureMockMvc(addFilters = false)
+@WithMockUser(roles = "ADMIN")
 public class ItemServiceImplIntegrationTest {
 
     @Container
@@ -40,6 +46,9 @@ public class ItemServiceImplIntegrationTest {
 
     @Container
     static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.0.1"));
+
+    @MockBean
+    private OAuth2AuthorizedClientManager authorizedClientManager;
 
     private static final String ORDER_CREATED_TOPIC = "test-order-created";
     private static final String PAYMENT_STATUS_TOPIC = "test-payment-status";
