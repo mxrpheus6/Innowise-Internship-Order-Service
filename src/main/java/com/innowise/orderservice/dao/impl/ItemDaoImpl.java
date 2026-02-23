@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 public class ItemDaoImpl implements ItemDao {
 
     private static final class SQL {
+        static final String GET_ALL = "select * from items";
         static final String GET_BY_ID = "select * from items where id = ?";
         static final String GET_BY_IDS = "select * from items where id in (%s)";
 
@@ -40,6 +41,11 @@ public class ItemDaoImpl implements ItemDao {
     }
 
     private final JdbcTemplate jdbcTemplate;
+
+    @Override
+    public List<Item> findAll() {
+        return jdbcTemplate.query(SQL.GET_ALL, ROW_MAPPER);
+    }
 
     @Override
     public Optional<Item> findById(UUID id) {

@@ -39,6 +39,22 @@ public class OrderDaoImpl implements OrderDao {
                 """;
 
         static final String DELETE_BY_ID = "delete from orders where id = ?";
+
+        static final String GET_BY_ID_AND_USER_ID = "select * from orders where id = ? and user_id = ?";
+        static final String GET_BY_USER_ID = "select * from orders where user_id = ?";
+        static final String GET_BY_STATUS_AND_USER = "select * from orders where status = ? and user_id = ?";
+        static final String GET_BY_IDS_AND_USER = "select * from orders where id in (%s) and user_id = ?";
+
+        static final String UPDATE_BY_ID_AND_USER_ID =
+                """
+                update orders
+                set status = ?
+                where id = ? and user_id = ?
+                returning *
+                """;
+
+        static final String DELETE_BY_ID_AND_USER_ID = "delete from orders where id = ? and user_id = ?";
+
     }
 
     private final JdbcTemplate jdbcTemplate;
@@ -100,6 +116,62 @@ public class OrderDaoImpl implements OrderDao {
     @Override
     public void deleteById(UUID id) {
         jdbcTemplate.update(SQL.DELETE_BY_ID, id);
+    }
+
+    @Override
+    public Optional<Order> findByIdAndUserId(UUID id, UUID userId) {
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(SQL.GET_BY_ID_AND_USER_ID, ROW_MAPPER, id, userId));
+        } catch (DataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public List<Order> findByUserId(UUID userId) {
+        return jdbcTemplate.query(SQL.GET_BY_USER_ID, ROW_MAPPER, userId);
+    }
+
+    @Override
+    public List<Order> findByStatusAndUserId(Status status, UUID userId) {
+        return jdbcTemplate.query(SQL.GET_BY_STATUS_AND_USER, ROW_MAPPER, status.name(), userId);
+    }
+
+    @Override
+    public List<Order> findByIdsAndUserId(Set<UUID> ids, UUID userId) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        String placeholders = String.join(",", Collections.nCopies(ids.size(), "?"));
+        String sql = String.format(SQL.GET_BY_IDS_AND_USER, placeholders);
+
+        Object[] params = new Object[ids.size() + 1];
+        int i = 0;
+        for (UUID id : ids) params[i++] = id;
+        params[i] = userId;
+
+        return jdbcTemplate.query(sql, ROW_MAPPER, params);
+    }
+
+    @Override
+    public Optional<Order> updateByIdAndUserId(UUID id, UUID userId, Order order) {
+        try {
+            Order updated = jdbcTemplate.queryForObject(
+                    SQL.UPDATE_BY_ID_AND_USER_ID,
+                    ROW_MAPPER,
+                    order.getStatus().name(),
+                    id,
+                    userId
+            );
+            return Optional.ofNullable(updated);
+        } catch (DataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public void deleteByIdAndUser(UUID id, UUID userId) {
+        jdbcTemplate.update(SQL.DELETE_BY_ID_AND_USER_ID, id, userId);
     }
 
 }

@@ -4,6 +4,7 @@ import com.innowise.orderservice.client.user.UserFeignClient;
 import com.innowise.orderservice.client.user.UserResponse;
 import com.innowise.orderservice.dao.OrderDao;
 import com.innowise.orderservice.dto.request.OrderRequest;
+import com.innowise.orderservice.dto.request.UserOrderRequest;
 import com.innowise.orderservice.dto.response.OrderItemResponse;
 import com.innowise.orderservice.dto.response.OrderResponse;
 import com.innowise.orderservice.exception.custom.OrderNotFoundException;
@@ -203,6 +204,37 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
+    public OrderResponse createForCurrentUser(UserOrderRequest userRequest, UUID userId) {
+        UserResponse user = userFeignClient.getUserById(userId);
+
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setStatus(Status.NEW);
+
+        Order savedOrder = orderDao.create(order);
+
+        List<OrderItemResponse> savedItems = List.of();
+        if (userRequest.getOrderItems() != null && !userRequest.getOrderItems().isEmpty()) {
+            userRequest.getOrderItems().forEach(item -> item.setOrderId(savedOrder.getId()));
+
+            savedItems = orderItemService.createAll(userRequest.getOrderItems());
+        }
+
+        OrderResponse response = orderMapper.toResponse(savedOrder);
+        response.setItems(savedItems);
+        response.setUser(user);
+
+        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(
+                response.getId(),
+                response.getUser().getId(),
+                calculateTotalAmount(response));
+        orderCreatedEventProducer.send(orderCreatedEvent);
+
+        return response;
+    }
+
+    @Override
     public OrderResponse updateStatusById(UUID id, PaymentStatus paymentStatus) {
         Order existingOrder = orderDao.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found"));
@@ -212,6 +244,130 @@ public class OrderServiceImpl implements OrderService {
         Order updatedOrder = orderDao.updateById(id, existingOrder);
 
         return orderMapper.toResponse(updatedOrder);
+    }
+
+    @Override
+    public List<OrderResponse> findByUserId(UUID userId) {
+        List<Order> orders = orderDao.findByUserId(userId);
+
+        List<UUID> orderIds = orders.stream()
+                .map(Order::getId)
+                .toList();
+
+        List<UUID> userIds = orders.stream()
+                .map(Order::getUserId)
+                .toList();
+
+        List<OrderItemResponse> allItems = orderItemService.findByOrderIds(Set.copyOf(orderIds));
+
+        List<UserResponse> users = userFeignClient.getUsersByIds(userIds);
+        Map<UUID, UserResponse> usersById = users.stream()
+                .collect(Collectors.toMap(UserResponse::getId, u -> u));
+
+
+        Map<UUID, List<OrderItemResponse>> itemsByOrderId = allItems.stream()
+                .collect(Collectors.groupingBy(OrderItemResponse::getOrderId));
+
+        return orders.stream()
+                .map(order -> {
+                    OrderResponse response = orderMapper.toResponse(order);
+                    response.setItems(itemsByOrderId.getOrDefault(order.getId(), List.of()));
+                    response.setUser(usersById.get(order.getUserId()));
+                    return response;
+                })
+                .toList();
+    }
+
+    @Override
+    public OrderResponse findByIdAndUserId(UUID id, UUID userId) {
+        Order order = orderDao.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+
+        List<OrderItemResponse> items = orderItemService.findByOrderId(id);
+        UserResponse user = userFeignClient.getUserById(order.getUserId());
+
+        OrderResponse response = orderMapper.toResponse(order);
+        response.setItems(items);
+        response.setUser(user);
+        return response;
+    }
+
+    public OrderResponse updateByIdAndUserId(UUID id, UUID userId, OrderRequest request) {
+        Order orderToUpdate = orderMapper.toEntity(request);
+
+        return orderDao.updateByIdAndUserId(id, userId, orderToUpdate)
+                .map(orderMapper::toResponse)
+                .orElseThrow();
+    }
+
+    @Override
+    @Transactional
+    public void deleteByIdAndUserId(UUID id, UUID userId) {
+        orderDao.deleteByIdAndUser(id, userId);
+    }
+
+    @Override
+    public List<OrderResponse> findByStatusAndUserId(Status status, UUID userId) {
+        List<Order> orders = orderDao.findByStatusAndUserId(status, userId);
+
+        List<UUID> orderIds = orders.stream()
+                .map(Order::getId)
+                .toList();
+
+        List<UUID> userIds = orders.stream()
+                .map(Order::getUserId)
+                .toList();
+
+        List<OrderItemResponse> allItems = orderItemService.findByOrderIds(Set.copyOf(orderIds));
+
+        List<UserResponse> users = userFeignClient.getUsersByIds(userIds);
+        Map<UUID, UserResponse> usersById = users.stream()
+                .collect(Collectors.toMap(UserResponse::getId, u -> u));
+
+
+        Map<UUID, List<OrderItemResponse>> itemsByOrderId = allItems.stream()
+                .collect(Collectors.groupingBy(OrderItemResponse::getOrderId));
+
+        return orders.stream()
+                .map(order -> {
+                    OrderResponse response = orderMapper.toResponse(order);
+                    response.setItems(itemsByOrderId.getOrDefault(order.getId(), List.of()));
+                    response.setUser(usersById.get(order.getUserId()));
+                    return response;
+                })
+                .toList();
+    }
+
+    @Override
+    public List<OrderResponse> findByIdsAndUserId(Set<UUID> ids, UUID userId) {
+        List<Order> orders = orderDao.findByIdsAndUserId(ids, userId);
+
+        List<UUID> orderIds = orders.stream()
+                .map(Order::getId)
+                .toList();
+
+        List<UUID> userIds = orders.stream()
+                .map(Order::getUserId)
+                .toList();
+
+        List<OrderItemResponse> allItems = orderItemService.findByOrderIds(Set.copyOf(orderIds));
+
+        List<UserResponse> users = userFeignClient.getUsersByIds(userIds);
+        Map<UUID, UserResponse> usersById = users.stream()
+                .collect(Collectors.toMap(UserResponse::getId, u -> u));
+
+
+        Map<UUID, List<OrderItemResponse>> itemsByOrderId = allItems.stream()
+                .collect(Collectors.groupingBy(OrderItemResponse::getOrderId));
+
+        return orders.stream()
+                .map(order -> {
+                    OrderResponse response = orderMapper.toResponse(order);
+                    response.setItems(itemsByOrderId.getOrDefault(order.getId(), List.of()));
+                    response.setUser(usersById.get(order.getUserId()));
+                    return response;
+                })
+                .toList();
     }
 
 }

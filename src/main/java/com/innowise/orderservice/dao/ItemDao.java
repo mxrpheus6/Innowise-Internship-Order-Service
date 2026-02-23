@@ -15,6 +15,7 @@ public interface ItemDao {
             .price(resultSet.getBigDecimal("price"))
             .build();
 
+    List<Item> findAll();
     Optional<Item> findById(UUID id);
     List<Item> findByIds(Set<UUID> ids);
     Item create(Item item);
